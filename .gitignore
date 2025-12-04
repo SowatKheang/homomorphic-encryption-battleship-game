@@ -1,3 +1,5 @@
 .venv
 uv.lock
 test.py
+
+__pycache__/

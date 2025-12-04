@@ -1,0 +1,9 @@
+[project]
+name = "Homework_3_Battleship_Game_Improvements"
+version = "0.1.0"
+description = "A full Battleship board 10x10 matrix and each player has 5 boats with sizes of 5, 4, 3, 2 and 2 dots using homomorphic encryption to hide the board information"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "phe>=1.5.0",
+]

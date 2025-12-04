@@ -6,11 +6,13 @@ Howework 3              :   Implementing a full Battleship board 10x10 matrix an
                             has 5 boats with sizes of 5, 4, 3, 2 and 2 dots using homomorphic encryption 
                             to hide the board information
                         
-Run the program         :   python3 homework_3_battleship_game.py
+Run the program         :   1. uv sync
+                            2. uv run homework_3_battleship_game.py
 """
 
 import random
-from math import gcd
+import sys
+from phe import paillier
 from enum import Enum
 
 # Battleship Game Logic
@@ -61,22 +63,82 @@ def place_boats(board):
                         for i in range(boat_size):
                             board[row + i][col] = 1
                         placed = True
-                        
-    # ? Haven't tested yet
-    print(board)
 
+# Encrypt the board with Paillier public key
+def encrypt_board(plain_board, public_key):
+    """
+        Encrypt all cells in the  board with the given Paillier public key.
+        The result is a BOARD_SIZE x BOARD_SIZE matrix of ciphertexts.
+    """
+    encrypted_board = []
+
+    for row_index in range(BOARD_SIZE):
+        encrypted_row = []
+        for col_index in range(BOARD_SIZE):
+            cell_value = plain_board[row_index][col_index]  # 0 empty or 1 boat part
+            encrypted_cell = public_key.encrypt(cell_value)
+            encrypted_row.append(encrypted_cell)
+        encrypted_board.append(encrypted_row)
+
+    return encrypted_board
+
+# Generate Paillier keypair
+def generate_keypair(n_length=512):
+    """
+        Generate a Paillier keypair with the specified key length.
+        Returns the public and private keys.
+    """
+    public_key, private_key = paillier.generate_paillier_keypair(n_length=n_length)
+    return public_key, private_key
 
 # Main function
 def main():
     print(f"\nWelcome to the Battleship Game with Homomorphic Encryption\n")
     
-    # Test create board
-    board = create_board()
-    place_boats(board)
+    # Optional: fix random seed so boat positions are deterministic for demo
+    random.seed(23)
     
-    # Create boards for two players
-    # TODO:
+    # Alice's keypair
+    print("Generating Paillier keypair for Alice...")
+    alice_public_key, alice_private_key = generate_keypair(n_length=256)  # small key for demo
+    print("Alice's Paillier keypair generated.\n")
+    
+    # Bob's keypair
+    print("Generating Paillier keypair for Bob...")
+    bob_public_key, bob_private_key = generate_keypair(n_length=256)      # small key for demo
+    print("Bob's Paillier keypair generated.\n")
+    
+    # Creating boards
+    print("Creating and placing boats on Alice's board...")
+    alice_board = create_board()
+    bob_board = create_board()
+    place_boats(alice_board)
+    place_boats(bob_board)
+    
+    #! For demo purposes, displaying plain boards
+    #! Need to remove this is a real game
+    print_player_board(alice_board, "Alice")
+    print_player_board(bob_board, "Bob")
 
+# Print player board helper function
+def print_player_board(player_board, player_name):
+    print(f"\033[93m<<== [DEBUG] {player_name}'s plain board (1 = boat, 0 = empty):\033[0m")
+    for row in player_board:
+        # if item in row is 1, print blue else print white
+        print("   ", end="")
+        for item in row:
+            if item == 1:
+                print("\033[94m1\033[0m", end=" ") # This code prints in blue color
+            else:
+                print("0", end=" ")
+        print()
+    print()
+    
+# TODO: Implement Encrypting boards
+
+# TODO: Implement Players taking turns to guess
+
+
+# Entry point
 if __name__ == "__main__":
-    random.seed(42)
     main()
